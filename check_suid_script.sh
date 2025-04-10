@@ -10,19 +10,9 @@ if [[ $(id -u) -ne 0 ]]; then
 fi
 
 if [[ $# -ne 0 ]]; then
-	if [[ $1 -eq "-d" ]]; then
-		if [[ -f ${logfile} ]]; then
-			rm -f ${logfile}
-		fi
-		if [[ -f ${temp_logfile} ]]; then
-			rm -f ${temp_logfile}
-		fi
-		if [[ -f ${last_check} ]]; then
-			rm -f ${last_check}
-		fi
-		if [[ ! -f ${logfile} && ! -f ${temp_logfile} && ! -f ${last_check} ]]; then
+	if [[ $1 == "-d" ]]; then
+		if rm -f ${logfile} ${temp_logfile} ${last_check}; then
 			echo "Logfiles deleted successfully."
-			exit 0
 		else
 			echo "Logfile deletion failed."
 			exit 1
@@ -34,7 +24,7 @@ if [[ $# -ne 0 ]]; then
 fi
 
 if [[ ! -f ${logfile} ]]; then
-	echo "Logfile not found to compare. Try it next time."
+	echo "Generating logfiles for future use..."
 	find / -perm -u+s -ls 1> ${logfile} 2>/dev/null
 	date > ${last_check}
 	if [[ -f ${logfile} && -f ${last_check} ]]; then
