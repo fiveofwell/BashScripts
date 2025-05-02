@@ -1,25 +1,29 @@
 #!/bin/bash
 
+function exit_with_error() {
+echo "Invalid IP address : ${1}"
+exit 1
+}
+
 function check_IP_format() {
-	local field_count=$(echo "${1}" | awk -F '.' '{print NF}')
+local address
+for address in "$@"
+do
+	local field_count=$(echo "${address}" | awk -F '.' '{print NF}')
 	if [[ "${field_count}" -ne 4 ]]; then
-		echo "Invalid IP address."
-		exit 1
+		exit_with_error "${address}"
 	fi
 
 	for i in {1..4}
 	do
-		local field=$(echo "${1}" | cut -d . -f "${i}")
+		local field=$(echo "${address}" | cut -d . -f "${i}")
 		if [[ -n $(echo "${field}" | sed 's/[0-9]//g') ]]; then
-			echo "Invalid IP address."
-			exit 1
+		exit_with_error "${address}"
 		elif [[ -z "${field}" ]]; then
-			echo "Invalid IP address."
-			exit 1
+		exit_with_error "${address}"
 		elif [[ "${field}" -lt 0 || "${field}" -gt 255 ]]; then
-			echo "Invalid IP address."
-			exit 1
+		exit_with_error "${address}"
 		fi	       
 	done
+done
 }
-
