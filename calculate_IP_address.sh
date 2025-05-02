@@ -32,17 +32,22 @@ fi
 
 done
 
-network_address="";
+network_address=""
+broadcast_address=""
+
 for i in {1..4}
 do
 field=$(echo "${1}" | cut -d "." -f "${i}")
 subnet_field=$(echo "${2}" | cut -d "." -f "${i}")
 network_address="${network_address}$((${field}&${subnet_field}))"
+broadcast_address="${broadcast_address}$((${field}|(255^${subnet_field})))"
 
 if [[ ${i} -ne 4 ]]; then
 network_address="${network_address}."
+broadcast_address="${broadcast_address}."
 fi
 
 done
 
 echo "Network address is ${network_address}"
+echo "Broadcast address is ${broadcast_address}"
