@@ -13,7 +13,7 @@ do
 	if [[ "${field_count}" -ne 4 ]]; then
 		exit_with_error "${address}"
 	fi
-
+	local i
 	for i in {1..4}
 	do
 		local field=$(echo "${address}" | cut -d . -f "${i}")
