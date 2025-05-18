@@ -30,13 +30,19 @@ else
 	exit 1
 fi
 
-echo "The port scan is performed on ${address}."
+if ping -c 1 -W 3 "${address}" >/dev/null 2>&1; then
+	echo "The port scan is performed on ${address}."
 
-for port in "${scan_ports[@]}"
-do
-	if nc -z -w1 "${address}" "${port}" 2>/dev/null; then
-		echo "${port} is open."
-	else
-		echo "${port} is closed."
-	fi
-done
+	for port in "${scan_ports[@]}"
+	do
+		if nc -z -w1 "${address}" "${port}" 2>/dev/null; then
+			echo "${port} is open."
+		else
+			echo "${port} is closed."
+		fi
+	done
+else
+	echo "Cannot access to ${address}"
+	exit 1
+fi
+
