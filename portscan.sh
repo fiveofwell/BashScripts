@@ -21,33 +21,26 @@ scan_ports=(
 
 skip_ping=false
 
-if [[ $# -eq 0 ]]; then
-	address="192.168.1.1"
-	check_IP_format "${address}"
-elif [[ $# -eq 1 ]]; then
-	if [[ "$1" == "-s" ]]; then
-		skip_ping=true
-		address="192.168.1.1"
-		check_IP_format "${address}"
-	else
-		address="$1"
-		check_IP_format "${address}"
-	fi
-elif [[ $# -eq 2 ]]; then
-	option="$1"
-	if [[ "${option}" == "-s" ]]; then
-		skip_ping=true
-	else
-		echo "Invalid option."
-		echo "Usage: $0 [-s] [IP address]"
-		exit 1
-	fi
-	address="$2"
-	check_IP_format "${address}"
+while getopts "s" OPT
+do
+	case $OPT in
+		s)
+			skip_ping=true ;;
+		*)
+			echo "Usage: $0 [-s] [address]"
+			exit 1 ;;
+	esac
+done
+
+shift $((OPTIND -1))
+
+if [[ $# -eq 1 ]]; then
+	address="$1"
 else
-	echo "Too many arguments."
-	exit 1
+	address="192.168.1.1"
 fi
+
+check_IP_format "${address}"
 
 if ! ${skip_ping}; then
 	if ! ping -c 1 -W 3 "${address}" >/dev/null 2>&1; then
