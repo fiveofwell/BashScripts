@@ -5,7 +5,7 @@ source check_IP_format.sh
 function port_range_validation () {
 	if [[ ${1} -gt 65535 ]]; then
 		echo "Invalid port range."
-		exit 1;
+		exit 1
 	fi
 }
 
@@ -55,17 +55,20 @@ do
 				scan_ports+=("${i}")
 			done ;;
 		*)
-			echo "Usage: $0 [-s] [-p ports] [address]"
+			echo "Usage: $0 [-s] [-p port-port ] [address]"
 			exit 1 ;;
 	esac
 done
 
 shift $((OPTIND -1))
 
-if [[ $# -eq 1 ]]; then
+if [[ $# -eq 0 ]]; then
+	address="192.168.1.1"
+elif [[ $# -eq 1 ]]; then
 	address="$1"
 else
-	address="192.168.1.1"
+	echo "Too many arguments."
+	exit 1
 fi
 
 check_IP_format "${address}"
