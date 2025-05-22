@@ -35,7 +35,7 @@ do
 			skip_ping=true ;;
 		p)
 			if [[ ! ${OPTARG} =~ ^[0-9]+\-[0-9]+$ ]]; then
-				echo "Invaid port specification."
+				echo "Invalid port specification."
 				exit 1
 			fi
 
