@@ -2,6 +2,12 @@
 
 source check_IP_format.sh
 
+function usage () {
+	echo "Usage: $0 [-s] [-p port-port] [address]"
+	echo "-s		Skip ping check"
+	echo "-p port-port	Specify port range"
+	echo "address 	Target IP address (default:192.168.1.1)"	
+}
 function port_range_validation () {
 	if [[ ${1} -gt 65535 ]]; then
 		echo "Invalid port range."
@@ -55,7 +61,7 @@ do
 				scan_ports+=("${i}")
 			done ;;
 		*)
-			echo "Usage: $0 [-s] [-p port-port ] [address]"
+			usage
 			exit 1 ;;
 	esac
 done
