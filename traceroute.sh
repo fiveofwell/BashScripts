@@ -12,6 +12,11 @@ fi
 
 check_IP_format "${address}"
 
+if ! ping -c3 -W3 "${address}" >/dev/null; then
+	echo "Host ${address} is unreachable."
+	exit 1
+fi
+
 echo "${max_hops} hops max."
 
 for ttl in $(seq 1 ${max_hops})
