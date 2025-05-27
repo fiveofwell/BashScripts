@@ -1,6 +1,7 @@
 #!/bin/bash
 
-source check_IP_format.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/check_IP_format.sh"
 
 address=$1
 max_hops=30

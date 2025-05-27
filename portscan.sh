@@ -1,6 +1,7 @@
 #!/bin/bash
 
-source check_IP_format.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/check_IP_format.sh"
 
 function usage () {
 	echo "Usage: $0 [-s] [-p port-port] [address]"
@@ -8,6 +9,7 @@ function usage () {
 	echo "-p port-port	Specify port range"
 	echo "address 	Target IP address (default:192.168.1.1)"	
 }
+
 function port_range_validation () {
 	if [[ ${1} -gt 65535 ]]; then
 		echo "Invalid port range."
