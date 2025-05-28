@@ -1,34 +1,14 @@
 #!/bin/bash
 
-function check_ip_format() {
-	local field_count=$(echo "${1}" | awk -F '.' '{print NF}')
-	if [[ "${field_count}" -ne 4 ]]; then
-		echo "Invalid IP address."
-		exit 1
-	fi
-
-	for i in {1..4}
-	do
-		local field=$(echo "${1}" | cut -d . -f "${i}")
-		if [[ -n $(echo "${field}" | sed 's/[0-9]//g') ]]; then
-			echo "Invalid IP address."
-			exit 1
-		elif [[ -z "${field}" ]]; then
-			echo "Invalid IP address."
-			exit 1
-		elif [[ "${field}" -lt 0 || "${field}" -gt 255 ]]; then
-			echo "Invalid IP address."
-			exit 1
-		fi	       
-	done
-}
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/check_IP_format.sh"
 
 temp_dir=$(mktemp -d)
 
 scan_start_ip="192.168.1.%g"
 
 if [[ $# -eq 1 ]];then
-	check_ip_format "${1}"
+	check_IP_format "${1}"
 	scan_start_ip=${1}
 elif [[ $# -ne 0 ]];then
 	echo "Too many arguments."
