@@ -1,5 +1,10 @@
 #!/bin/bash
 
+function usage () {
+	echo "Usage: $0 [-d]"
+	echo "-d	Delete log files"
+}
+
 logfile="/var/log/check_suid"
 temp_logfile="/tmp/check_suid_temp"
 last_check="/var/log/check_suid_date"
@@ -19,6 +24,7 @@ if [[ $# -ne 0 ]]; then
 		fi
 	else
 		echo "Invalid option ${1}."
+		usage
 		exit 1;
 	fi
 fi
