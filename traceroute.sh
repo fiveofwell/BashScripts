@@ -20,16 +20,24 @@ fi
 
 echo "${max_hops} hops max."
 
+reached=false
+
 for ttl in $(seq 1 ${max_hops})
 do
-	result=$(ping -c1 -t "${ttl}" "${address}")
+	result=$(LANG=C ping -c1 -t "${ttl}" "${address}")
 	if [[ $? -eq 0 ]]; then
-		echo "${ttl} : ${address}"
+		response_time=$(echo "$result" | grep 'time=' | sed -E 's/.*time=([0-9.]+) ms.*/\1/')
+		echo "${ttl} : ${address} (${response_time} ms)"
+		reached=true
 		break
 	elif [[ -n $(echo "${result}" | grep exceeded) ]]; then
-		reply_address=$(echo "${result}" | grep From | cut -d ' ' -f 2)
+		reply_address=$(echo "${result}" | grep 'From' | cut -d ' ' -f 2)
 		echo "${ttl} : ${reply_address}"
 	else
 		echo "${ttl} : *"
 	fi
 done
+
+if ! $reached; then
+	echo "Reached max hops."
+fi
