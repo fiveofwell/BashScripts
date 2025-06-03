@@ -3,6 +3,11 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/check_IP_format.sh"
 
+function usage () {
+	echo "Usage: $0 [IP_address]"
+	echo "IP_address    Scan start address"
+}
+
 temp_dir=$(mktemp -d)
 
 scan_start_ip="192.168.1.%g"
@@ -12,6 +17,7 @@ if [[ $# -eq 1 ]];then
 	scan_start_ip=${1}
 elif [[ $# -ne 0 ]];then
 	echo "Too many arguments."
+	usage
 	exit 1
 fi
 

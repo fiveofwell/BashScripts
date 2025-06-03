@@ -1,15 +1,24 @@
 #!/bin/bash
 
+function usage () {
+	echo "Usage: $0 <IP_address>"
+}
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/check_IP_format.sh"
 
-address=$1
-max_hops=30
-
-if [[ -z ${address} ]]; then
-	echo "Usage: $0 [address]"
+if [[ $# -eq 0 ]]; then
+	echo "Target IP address required."
+	usage
+	exit 1
+elif [[ $# -ge 2 ]]; then
+	echo "Too many arguments."
+	usage
 	exit 1
 fi
+
+address=$1
+max_hops=30
 
 check_IP_format "${address}"
 
