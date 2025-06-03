@@ -1,5 +1,9 @@
 #!/bin/bash
 
+function usage () {
+	echo "Usage: $0 <IP_address>"
+}
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/check_IP_format.sh"
 
@@ -7,7 +11,7 @@ address=$1
 max_hops=30
 
 if [[ -z ${address} ]]; then
-	echo "Usage: $0 [address]"
+	usage
 	exit 1
 fi
 
