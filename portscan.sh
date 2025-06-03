@@ -49,7 +49,7 @@ do
 
 			port_start=$( echo "${OPTARG}" | cut -d '-' -f 1)
 			port_end=$( echo "${OPTARG}" | cut -d '-' -f 2)
-			
+
 			port_range_validation "${port_start}"
 			port_range_validation "${port_end}"
 
