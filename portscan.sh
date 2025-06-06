@@ -5,13 +5,14 @@ source "${SCRIPT_DIR}/check_IP_format.sh"
 
 function usage () {
 	echo "Usage: $0 [-s] [-p port-port] [address]"
-	echo "-s		Skip ping check"
-	echo "-p port-port	Specify port range"
-	echo "address 	Target IP address (default:192.168.1.1)"	
+	echo "-s              Skip ping check"
+	echo "-p port-port    Specify port range"
+	echo "-h              Help"
+	echo "address         Target IP address (default:192.168.1.1)"	
 }
 
 function port_range_validation () {
-	if [[ ${1} -gt 65535 ]]; then
+	if [[ $1 -gt 65535 || $1 -lt 1 ]]; then
 		echo "Invalid port range."
 		exit 1
 	fi
@@ -34,9 +35,17 @@ scan_ports=(
 	8080
 )
 
+declare -A unique_ports
+
+for port in "${scan_ports[@]}"
+do
+	unique_ports[$port]=1
+
+done
+
 skip_ping=false
 
-while getopts "sp:" OPT
+while getopts "sp:h" OPT
 do
 	case $OPT in
 		s)
@@ -60,8 +69,11 @@ do
 
 			for i in $(seq ${port_start} ${port_end})
 			do
-				scan_ports+=("${i}")
+				unique_ports[$i]=1
 			done ;;
+		h)
+			usage
+			exit 0 ;;
 		*)
 			usage
 			exit 1 ;;
@@ -83,14 +95,15 @@ check_IP_format "${address}"
 
 if ! ${skip_ping}; then
 	if ! ping -c 1 -W 3 "${address}" >/dev/null 2>&1; then
-		echo "Cannot access to ${address}"
+		echo "Cannot ping ${address}. It might be offline or ICMP is blocked."
+		echo "You can skip the ping check by using the -s option."
 		exit 1
 	fi
 fi
 
 echo "The port scan is performed on ${address}."
 
-for port in "${scan_ports[@]}"
+for port in $(printf "%s\n" "${!unique_ports[@]}" | sort -n)
 do
 	if nc -z -w1 "${address}" "${port}" 2>/dev/null; then
 		echo "${port} is open."
