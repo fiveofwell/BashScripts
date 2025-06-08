@@ -25,7 +25,7 @@ if [[ -n $(echo "${1}" | grep '/') ]]; then
 	address=$(echo "${1}" | cut -d '/' -f 1)
 	prefix=$(echo "${1}" | cut -d '/' -f 2)
 	if ! [[ ${prefix} =~ ^[0-9]+$ ]] || ((prefix < 0 || prefix > 32)); then
-		echo "Invalid CIDR prefix."
+		echo "Invalid CIDR prefix: ${prefix}"
 		exit 1
 	fi
 
@@ -49,7 +49,7 @@ if [[ -n $(echo "${1}" | grep '/') ]]; then
 else
 
 	if [[ $# -le 1 ]]; then
-		echo "Two arguments required."
+		echo "Arguments required."
 		usage
 		exit 1
 	elif [[ $# -ge 3 ]]; then
@@ -61,7 +61,12 @@ else
 	subnet_mask="${2}"
 fi
 
-check_IP_format "${address}" "${subnet_mask}"
+check_IP_format "${address}"
+
+if ! check_IP_format -e "${subnet_mask}" >/dev/null; then
+	echo "Invalid subnet mask: ${subnet_mask}"
+	exit 1;
+fi
 
 bin=""
 for i in {1..4}
@@ -72,7 +77,7 @@ do
 done
 
 if ! [[ ${bin} =~ ^1*0*$ ]]; then
-	echo "Invalid subnet mask."
+	echo "Invalid subnet mask: ${subnet_mask}"
 	exit 1
 fi
 
