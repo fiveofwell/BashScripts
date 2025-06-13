@@ -27,12 +27,14 @@ function check_IP_format() {
 
 	shift $((OPTIND -1))
 
+	local address
 	for address in "$@"
 	do
 		local field_count=$(echo "${address}" | awk -F '.' '{print NF}')
 		if [[ "${field_count}" -ne 4 ]]; then
 			exit_with_error "${address}" "${no_exit}" || return 1
 		fi
+		local i
 		for i in {1..4}
 		do
 			local field=$(echo "${address}" | cut -d . -f "${i}")
