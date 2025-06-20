@@ -12,7 +12,7 @@ function usage () {
 }
 
 function port_range_validation () {
-	if [[ $1 -gt 65535 || $1 -lt 1 ]]; then
+	if [[ "$1" -gt 65535 || "$1" -lt 1 ]]; then
 		echo "Invalid port range."
 		exit 1
 	fi
@@ -39,37 +39,36 @@ declare -A unique_ports
 
 for port in "${scan_ports[@]}"
 do
-	unique_ports[$port]=1
-
+	unique_ports["${port}"]=1
 done
 
 skip_ping=false
 
 while getopts "sp:h" OPT
 do
-	case $OPT in
+	case "${OPT}" in
 		s)
 			skip_ping=true ;;
 		p)
-			if [[ ! ${OPTARG} =~ ^[0-9]+\-[0-9]+$ ]]; then
+			if [[ ! "${OPTARG}" =~ ^[0-9]+\-[0-9]+$ ]]; then
 				echo "Invalid port specification."
 				exit 1
 			fi
 
-			port_start=$( echo "${OPTARG}" | cut -d '-' -f 1)
-			port_end=$( echo "${OPTARG}" | cut -d '-' -f 2)
+			port_start=$(echo "${OPTARG}" | cut -d '-' -f 1)
+			port_end=$(echo "${OPTARG}" | cut -d '-' -f 2)
 
 			port_range_validation "${port_start}"
 			port_range_validation "${port_end}"
 
-			if [[ ${port_start} -gt ${port_end} ]]; then
+			if [[ "${port_start}" -gt "${port_end}" ]]; then
 				echo "Invalid port specification."
 				exit 1
 			fi
 
-			for i in $(seq ${port_start} ${port_end})
+			for i in $(seq "${port_start}" "${port_end}")
 			do
-				unique_ports[$i]=1
+				unique_ports["${i}"]=1
 			done ;;
 		h)
 			usage
@@ -82,9 +81,9 @@ done
 
 shift $((OPTIND -1))
 
-if [[ $# -eq 0 ]]; then
+if [[ "$#" -eq 0 ]]; then
 	address="192.168.1.1"
-elif [[ $# -eq 1 ]]; then
+elif [[ "$#" -eq 1 ]]; then
 	address="$1"
 else
 	echo "Too many arguments."
@@ -93,7 +92,7 @@ fi
 
 check_IP_format "${address}"
 
-if ! ${skip_ping}; then
+if ! $skip_ping; then
 	if ! ping -c 1 -W 3 "${address}" >/dev/null 2>&1; then
 		echo "Cannot ping ${address}. It might be offline or ICMP is blocked."
 		echo "You can skip the ping check by using the -s option."
