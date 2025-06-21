@@ -43,6 +43,7 @@ do
 done
 
 skip_ping=false
+show_service_name=true
 
 while getopts "sp:h" OPT
 do
@@ -104,9 +105,21 @@ echo "The port scan is performed on ${address}."
 
 for port in $(printf "%s\n" "${!unique_ports[@]}" | sort -n)
 do
-	if nc -z -w1 "${address}" "${port}" 2>/dev/null; then
-		echo "${port} is open."
+	if [[ "${show_service_name}" == true ]]; then
+		service_name="$(grep -m1 -E "${port}/(tcp|udp)" /etc/services | cut -f 1)"
+		if [[ -z "${service_name}" ]]; then
+			service_name="unknown"
+		fi
+		if nc -z -w1 "${address}" "${port}" 2>/dev/null; then
+			echo "${port}(${service_name}) is open."
+		else
+			echo "${port}(${service_name}) is closed."
+		fi
 	else
-		echo "${port} is closed."
+		if nc -z -w1 "${address}" "${port}" 2>/dev/null; then
+			echo "${port} is open."
+		else
+			echo "${port} is closed."
+		fi
 	fi
 done
