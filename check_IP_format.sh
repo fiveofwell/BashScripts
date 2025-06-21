@@ -17,7 +17,7 @@ function check_IP_format() {
 
 	while getopts "e" OPT
 	do
-		case $OPT in
+		case "${OPT}" in
 			e)
 				no_exit=true ;;
 			*)
@@ -30,15 +30,15 @@ function check_IP_format() {
 	local address
 	for address in "$@"
 	do
-		local field_count=$(echo "${address}" | awk -F '.' '{print NF}')
+		local field_count="$(echo "${address}" | awk -F '.' '{print NF}')"
 		if [[ "${field_count}" -ne 4 ]]; then
 			exit_with_error "${address}" "${no_exit}" || return 1
 		fi
 		local i
 		for i in {1..4}
 		do
-			local field=$(echo "${address}" | cut -d . -f "${i}")
-			if [[ -n $(echo "${field}" | sed 's/[0-9]//g') ]]; then
+			local field="$(echo "${address}" | cut -d . -f "${i}")"
+			if [[ -n "$(echo "${field}" | sed 's/[0-9]//g')" ]]; then
 				exit_with_error "${address}" "${no_exit}" || return 1
 			elif [[ -z "${field}" ]]; then
 				exit_with_error "${address}" "${no_exit}" || return 1
