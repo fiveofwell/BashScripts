@@ -4,8 +4,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/check_IP_format.sh"
 
 function usage () {
-	echo "Usage: $0 [-s] [-p port-port] [address]"
+	echo "Usage: $0 [-s] [-d] [-p port-port] [-h] [address]"
 	echo "-s              Skip ping check"
+	echo "-d              Disable displaying service name"
 	echo "-p port-port    Specify port range"
 	echo "-h              Help"
 	echo "address         Target IP address (default:192.168.1.1)"	
@@ -45,11 +46,13 @@ done
 skip_ping=false
 show_service_name=true
 
-while getopts "sp:h" OPT
+while getopts "sdp:h" OPT
 do
 	case "${OPT}" in
 		s)
 			skip_ping=true ;;
+		d)
+			show_service_name=false ;;
 		p)
 			if [[ ! "${OPTARG}" =~ ^[0-9]+\-[0-9]+$ ]]; then
 				echo "Invalid port specification."
@@ -93,7 +96,7 @@ fi
 
 check_IP_format "${address}"
 
-if ! $skip_ping; then
+if [[ "${skip_ping}" != true ]]; then
 	if ! ping -c 1 -W 3 "${address}" >/dev/null 2>&1; then
 		echo "Cannot ping ${address}. It might be offline or ICMP is blocked."
 		echo "You can skip the ping check by using the -s option."
