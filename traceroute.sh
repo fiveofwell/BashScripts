@@ -1,11 +1,11 @@
 #!/bin/bash
 
 function usage () {
-	echo "Usage: $0 <IP_address>"
+	echo "Usage: $0 <destination>"
 }
 
 if [[ "$#" -eq 0 ]]; then
-	echo "Target IP address required."
+	echo "Destination required."
 	usage
 	exit 1
 elif [[ "$#" -ge 2 ]]; then
@@ -14,11 +14,11 @@ elif [[ "$#" -ge 2 ]]; then
 	exit 1
 fi
 
-target="$1"
+destination="$1"
 max_hops=30
 
-if ! ping -c3 -W3 "${target}" >/dev/null; then
-	echo "Host ${target} is unreachable."
+if ! ping -c3 -W3 "${destination}" >/dev/null; then
+	echo "Host ${destination} is unreachable."
 	exit 1
 fi
 
@@ -28,10 +28,10 @@ reached=false
 
 for ttl in $(seq 1 ${max_hops})
 do
-	result="$(LANG=C ping -c1 -t "${ttl}" "${target}")"
+	result="$(LANG=C ping -c1 -t "${ttl}" "${destination}")"
 	if [[ "$?" -eq 0 ]]; then
 		response_time="$(echo "${result}" | grep 'time=' | sed -E 's/.*time=([0-9.]+) ms.*/\1/')"
-		echo "${ttl} : ${target} (${response_time} ms)"
+		echo "${ttl} : ${destination} (${response_time} ms)"
 		reached=true
 		break
 	elif [[ -n "$(echo "${result}" | grep exceeded)" ]]; then
