@@ -4,9 +4,6 @@ function usage () {
 	echo "Usage: $0 <IP_address>"
 }
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/check_IP_format.sh"
-
 if [[ "$#" -eq 0 ]]; then
 	echo "Target IP address required."
 	usage
@@ -17,13 +14,11 @@ elif [[ "$#" -ge 2 ]]; then
 	exit 1
 fi
 
-address="$1"
+target="$1"
 max_hops=30
 
-check_IP_format "${address}"
-
-if ! ping -c3 -W3 "${address}" >/dev/null; then
-	echo "Host ${address} is unreachable."
+if ! ping -c3 -W3 "${target}" >/dev/null; then
+	echo "Host ${target} is unreachable."
 	exit 1
 fi
 
@@ -33,10 +28,10 @@ reached=false
 
 for ttl in $(seq 1 ${max_hops})
 do
-	result="$(LANG=C ping -c1 -t "${ttl}" "${address}")"
+	result="$(LANG=C ping -c1 -t "${ttl}" "${target}")"
 	if [[ "$?" -eq 0 ]]; then
-		response_time="$(echo "$result" | grep 'time=' | sed -E 's/.*time=([0-9.]+) ms.*/\1/')"
-		echo "${ttl} : ${address} (${response_time} ms)"
+		response_time="$(echo "${result}" | grep 'time=' | sed -E 's/.*time=([0-9.]+) ms.*/\1/')"
+		echo "${ttl} : ${target} (${response_time} ms)"
 		reached=true
 		break
 	elif [[ -n "$(echo "${result}" | grep exceeded)" ]]; then
