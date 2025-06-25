@@ -4,6 +4,25 @@ function usage () {
 	echo "Usage: $0 <destination>"
 }
 
+max_hops=30
+
+while getopts "h:" OPT
+do
+	case "${OPT}" in
+	h)
+		if [[ "${OPTARG}" =~ ^[1-9][0-9]*$ || "${OPTARG}" -eq 0 ]]; then
+			max_hops="${OPTARG}"
+		else
+			echo "Invalid hop specification: ${OPTARG}"
+			exit 1
+		fi ;;
+	*)
+		exit 1 ;;
+	esac
+done
+
+shift $((OPTIND -1))
+
 if [[ "$#" -eq 0 ]]; then
 	echo "Destination required."
 	usage
@@ -15,14 +34,17 @@ elif [[ "$#" -ge 2 ]]; then
 fi
 
 destination="$1"
-max_hops=30
 
 if ! ping -c3 -W3 "${destination}" >/dev/null; then
 	echo "Host ${destination} is unreachable."
 	exit 1
 fi
 
-echo "${max_hops} hops max."
+if [[ "${max_hops}" -eq 1 ]]; then
+	echo "${max_hops} hop max."
+else
+	echo "${max_hops} hops max."
+fi
 
 reached=false
 
