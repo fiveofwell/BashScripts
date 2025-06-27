@@ -1,15 +1,20 @@
 #!/bin/bash
 
 function usage () {
-	echo "Usage: $0 <destination>"
+	echo "Usage: $0 [-m] [-h] <destination>"
+	echo "-m     Specify max hops (default:30)"
+	echo "-h     Help"
 }
 
 max_hops=30
 
-while getopts "h:" OPT
+while getopts "hm:" OPT
 do
 	case "${OPT}" in
 	h)
+		usage
+		exit 0 ;;
+	m)
 		if [[ "${OPTARG}" =~ ^[1-9][0-9]*$ || "${OPTARG}" -eq 0 ]]; then
 			max_hops="${OPTARG}"
 		else
