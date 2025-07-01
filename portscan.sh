@@ -13,7 +13,7 @@ function usage () {
 }
 
 function port_range_validation () {
-	if [[ "$1" -gt 65535 || "$1" -lt 1 ]]; then
+	if [[ "$1" -gt 65535 || "$1" -lt 0 ]]; then
 		echo "Invalid port range."
 		exit 1
 	fi
