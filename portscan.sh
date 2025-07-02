@@ -4,12 +4,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/check_IP_format.sh"
 
 function usage () {
-	echo "Usage: $0 [-s] [-d] [-p port-port] [-h] [address]"
-	echo "-s              Skip ping check"
-	echo "-d              Disable displaying service name"
-	echo "-p port-port    Specify port range"
-	echo "-h              Help"
-	echo "address         Target IP address (default:192.168.1.1)"	
+	echo "Usage: $0 [-s] [-d] [-p port[,port|port,port,...] [-h] [address]"
+	echo "-s                            Skip ping check"
+	echo "-d                            Disable displaying service name"
+	echo "-p port[,port|port-port,...]  Specify target ports (e.g. 10,50,100-200)"
+	echo "-h                            Help"
+	echo "address                       Target IP address (default:192.168.1.1)"
 }
 
 function port_range_validation () {
