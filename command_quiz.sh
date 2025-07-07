@@ -14,7 +14,6 @@ problems=(
 	head
 	tail
 	find
-	locate
 	du
 	df
 	chmod
@@ -37,16 +36,13 @@ problems=(
 	uptime
 	uname
 	free
-	iostat
 	lsof
 	dmesg
 	service
 	systemctl
 	ping
-	traceroute
 	ifconfig
 	tar
-	gzip
 	scp
 )
 
@@ -61,7 +57,9 @@ problem_cnt=0
 
 while [[ "${input}" != "end" && "${i}" -lt "${#problems[@]}" ]]
 do
-	cmd="${problems["${i}"]}"
+	all="${#problems[@]}"
+	rand="$(( RANDOM % all ))"
+	cmd="${problems["${rand}"]}"
 	description="$(man "${cmd}" | col -b | sed -n '/^NAME/,/^SYNOPSIS/p' | grep '-' | cut -d '-' -f 2 | sed 's/^ //g' )"
 	echo ""
 	echo "\"${description}\""
