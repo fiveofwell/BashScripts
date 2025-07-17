@@ -1,14 +1,35 @@
 #!/bin/bash
 
 function usage () {
-	echo "Usage: $0 <IP_address>"
+	echo "Usage: $0 [-m] [-h] <destination>"
+	echo "-m     Specify max hops (default:30)"
+	echo "-h     Help"
 }
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/check_IP_format.sh"
+max_hops=30
+
+while getopts "hm:" OPT
+do
+	case "${OPT}" in
+	h)
+		usage
+		exit 0 ;;
+	m)
+		if [[ "${OPTARG}" =~ ^[1-9][0-9]*$ || "${OPTARG}" -eq 0 ]]; then
+			max_hops="${OPTARG}"
+		else
+			echo "Invalid hop specification: ${OPTARG}"
+			exit 1
+		fi ;;
+	*)
+		exit 1 ;;
+	esac
+done
+
+shift $((OPTIND -1))
 
 if [[ "$#" -eq 0 ]]; then
-	echo "Target IP address required."
+	echo "Destination required."
 	usage
 	exit 1
 elif [[ "$#" -ge 2 ]]; then
@@ -17,26 +38,27 @@ elif [[ "$#" -ge 2 ]]; then
 	exit 1
 fi
 
-address="$1"
-max_hops=30
+destination="$1"
 
-check_IP_format "${address}"
-
-if ! ping -c3 -W3 "${address}" >/dev/null; then
-	echo "Host ${address} is unreachable."
+if ! ping -c3 -W3 "${destination}" >/dev/null; then
+	echo "Host ${destination} is unreachable."
 	exit 1
 fi
 
-echo "${max_hops} hops max."
+if [[ "${max_hops}" -eq 1 ]]; then
+	echo "${max_hops} hop max."
+else
+	echo "${max_hops} hops max."
+fi
 
 reached=false
 
 for ttl in $(seq 1 ${max_hops})
 do
-	result="$(LANG=C ping -c1 -t "${ttl}" "${address}")"
+	result="$(LANG=C ping -c1 -t "${ttl}" "${destination}")"
 	if [[ "$?" -eq 0 ]]; then
-		response_time="$(echo "$result" | grep 'time=' | sed -E 's/.*time=([0-9.]+) ms.*/\1/')"
-		echo "${ttl} : ${address} (${response_time} ms)"
+		response_time="$(echo "${result}" | grep 'time=' | sed -E 's/.*time=([0-9.]+) ms.*/\1/')"
+		echo "${ttl} : ${destination} (${response_time} ms)"
 		reached=true
 		break
 	elif [[ -n "$(echo "${result}" | grep exceeded)" ]]; then
