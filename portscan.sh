@@ -4,12 +4,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/check_IP_format.sh"
 
 function usage () {
-	echo "Usage: $0 [-s] [-d] [-p port-port] [-h] [address]"
-	echo "-s              Skip ping check"
-	echo "-d              Disable displaying service name"
-	echo "-p port-port    Specify port range"
-	echo "-h              Help"
-	echo "address         Target IP address (default:192.168.1.1)"	
+	echo "Usage: $0 [-s] [-d] [-p port[,port|port,port,...] [-h] [address]"
+	echo "-s                            Skip ping check"
+	echo "-d                            Disable displaying service name"
+	echo "-p port[,port|port-port,...]  Specify target ports (e.g. 10,50,100-200)"
+	echo "-h                            Help"
+	echo "address                       Target IP address (default:192.168.1.1)"
 }
 
 function port_range_validation () {
@@ -17,6 +17,38 @@ function port_range_validation () {
 		echo "Invalid port range."
 		exit 1
 	fi
+}
+
+function parse_port_spec () {
+	local spec="$1"
+	local field
+	for field in $(echo "${spec}" | sed 's/,/ /g')
+	do
+		if [[ "${field}" =~ ^[0-9]+\-[0-9]+$ ]];then
+			local start=$(echo "${field}" | cut -d '-' -f 1)
+			local end=$(echo "${field}" | cut -d '-' -f 2)
+
+			port_range_validation "${start}"
+			port_range_validation "${end}"
+
+			if [[ "${start}" -gt "${end}" ]]; then
+				echo "Invalid port specification."
+				exit 1
+			fi
+
+			local i
+			for i in $(seq "${start}" "${end}")
+			do
+				unique_ports["${i}"]=1
+			done
+
+		elif [[ "${field}" =~ ^[0-9]+$ ]];then
+			port_range_validation "${field}"
+			unique_ports["${field}"]=1
+		else
+			echo "Invalid port specification."
+		fi
+	done
 }
 
 scan_ports=(
@@ -54,26 +86,7 @@ do
 		d)
 			show_service_name=false ;;
 		p)
-			if [[ ! "${OPTARG}" =~ ^[0-9]+\-[0-9]+$ ]]; then
-				echo "Invalid port specification."
-				exit 1
-			fi
-
-			port_start=$(echo "${OPTARG}" | cut -d '-' -f 1)
-			port_end=$(echo "${OPTARG}" | cut -d '-' -f 2)
-
-			port_range_validation "${port_start}"
-			port_range_validation "${port_end}"
-
-			if [[ "${port_start}" -gt "${port_end}" ]]; then
-				echo "Invalid port specification."
-				exit 1
-			fi
-
-			for i in $(seq "${port_start}" "${port_end}")
-			do
-				unique_ports["${i}"]=1
-			done ;;
+			parse_port_spec "${OPTARG}" ;;
 		h)
 			usage
 			exit 0 ;;
