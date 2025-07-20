@@ -5,18 +5,20 @@ FILE_DIR="${SCRIPT_DIR}/data"
 FILENAME="${SCRIPT_DIR}/data/file_hashes.txt"
 
 usage () {
-	echo "Usage: $0 -a <file_to_append>"
+	echo "Usage: $0 [-a file_to_append] [-r file_to_remove]"
+	echo "-a        append the hash of file"
+	echo "-r        remove the hash of file"
 }
 
 mkdir -p "${FILE_DIR}"
 touch "${FILENAME}"
 
-while getopts "a:" OPT
+while getopts "a:r:" OPT
 do
 	case "${OPT}" in
 	a)
 		append_file="${OPTARG}"
-		if [[ ! -f "${OPTARG}" ]]; then
+		if [[ ! -f "${append_file}" ]]; then
 			echo "File ${append_file} does not exist."
 			exit 1
 		fi
@@ -28,6 +30,25 @@ do
 			exit 0
 		else
 			echo "Hash recording failed."
+			exit 1
+		fi
+		;;
+	r)
+		remove_file="${OPTARG}"
+		if [[ ! -f "${remove_file}" ]]; then
+			echo "File ${remove_file} does not exist."
+			exit 1
+		elif ! grep -Fq "${remove_file}" "${FILENAME}"; then
+			echo "The hash of ${remove_file} is not recorded."
+			exit 1
+		fi
+
+		sed -i "\|${remove_file}|d" "${FILENAME}"
+		if ! grep -Fq "${remove_file}" "${FILENAME}"; then
+			echo "The hash of ${remove_file} was successfully deleted."
+			exit 0
+		else
+			echo "Failed to delete the hash of ${remove_file}"
 			exit 1
 		fi
 		;;
