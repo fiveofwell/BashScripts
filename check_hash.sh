@@ -13,7 +13,7 @@ usage () {
 mkdir -p "${FILE_DIR}"
 touch "${FILENAME}"
 
-while getopts "a:r:" OPT
+while getopts "a:r:p" OPT
 do
 	case "${OPT}" in
 	a)
@@ -51,6 +51,10 @@ do
 			echo "Failed to delete the hash of ${remove_file}"
 			exit 1
 		fi
+		;;
+	p)
+		cat "${FILENAME}"
+		exit 0
 		;;
 	*)
 		usage
