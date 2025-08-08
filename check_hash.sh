@@ -5,9 +5,12 @@ FILE_DIR="${SCRIPT_DIR}/data"
 FILENAME="${SCRIPT_DIR}/data/file_hashes.txt"
 
 usage () {
-	echo "Usage: $0 [-a file_to_append] [-r file_to_remove]"
-	echo "-a        append the hash of file"
-	echo "-r        remove the hash of file"
+	echo "Usage: $0 [-p] [-a file [-y | -n]] [-r file]"
+	echo "-p             print the hash record file"
+	echo "-a file        append the hash of file"
+	echo "  -y           If the file already exists in the record, automatically replace its hash"
+	echo "  -n           If the file already exists in the record, automatically skip without updating"
+	echo "-r file        remove the hash of file"
 }
 
 add_hash () {
