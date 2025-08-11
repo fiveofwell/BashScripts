@@ -16,9 +16,10 @@ usage () {
 add_hash () {
 	local append_file="$1"
 	local hash="$(sha256sum "${append_file}" | cut -d ' ' -f1)"
-	local append_file_realpath="$(realpath "${append_file}")"
-	if echo "${hash} ${append_file_realpath} $(date '+%Y/%m/%d %H:%M:%S')" >>"${FILENAME}"; then
-		echo "The hash of ${append_file_realpath} was successfully recorded."
+	local file="$(realpath "${append_file}")"
+	local timestamp="$(date '+%Y/%m/%d %H:%M:%S')"
+	if echo -e "${hash}\t${file}\t${timestamp}" >>"${FILENAME}"; then
+		echo "The hash of ${file} was successfully recorded."
 		exit 0
 	else
 		echo "Hash recording failed."
@@ -160,17 +161,14 @@ if [[ "${flag_a}" = "true" ]]; then
 	exit 0
 fi
 
-while read line
+while IFS=$'\t' read -r hash file timestamp 
 do
-	hash="$(echo "${line}" | cut -d ' ' -f1)"
-	file="$(echo "${line}" | cut -d ' ' -f2)"
-	recorded_time="$(echo "${line}" | cut -d ' ' -f3,4)"
 	if [[ ! -f "${file}" ]]; then
 		echo "${file} does not exist."
 	elif [[ "$(sha256sum "${file}" | cut -d ' ' -f1)" != "${hash}" ]]; then
-		echo "${file} may have been modified since ${recorded_time}."
+		echo "${file} may have been modified since ${timestamp}."
 	else
-		echo "No changes found on ${file} since ${recorded_time}"
+		echo "No changes found on ${file} since ${timestamp}"
 	fi
 done < "${FILENAME}"
 exit 0
