@@ -25,11 +25,10 @@ add_hash () {
 		echo "Hash recording failed."
 		exit 1
 	fi
-
 }
 
 interactive_add_hash () {
-	local append_file="$1"
+	local append_file="$(realpath $1)"
 	local auto_yes="$2"
 	local auto_no="$3"
 
@@ -37,7 +36,7 @@ interactive_add_hash () {
 	if [[ ! -f "${append_file}" ]]; then
 		echo "File ${append_file} does not exist."
 		exit 1
-	elif grep -Fq "${append_file}" "${FILENAME}"; then
+	elif check_hash_entry "${append_file}" ; then
 		if [[ "${auto_yes}" = "true" ]]; then
 			echo "The hash of ${append_file} will be replaced."
 			if ! remove_hash "${append_file}"; then
@@ -73,21 +72,36 @@ interactive_add_hash () {
 }
 
 remove_hash () {
-	local remove_file="$1"
+	local remove_file="$(realpath $1)"
 	if [[ ! -f "${remove_file}" ]]; then
 		echo "File ${remove_file} does not exist."
 		return 1
-	elif ! grep -Fq "${remove_file}" "${FILENAME}"; then
+	elif ! check_hash_entry "${remove_file}"; then
 		echo "The hash of ${remove_file} is not recorded."
 		return 1
 	fi
 
-	sed -i "\|${remove_file}|d" "${FILENAME}"
-	if ! grep -Fq "${remove_file}" "${FILENAME}"; then
+	local line_number="$(awk -F '\t' -v name="${remove_file}" '$2 == name {print NR; exit}' "${FILENAME}")"
+
+	if [[ -n "${line_number}" ]]; then
+		sed -i "${line_number}d" "${FILENAME}"
+	fi
+
+	if ! check_hash_entry "${remove_file}"; then
 		echo "The hash of ${remove_file} was successfully deleted."
 		return 0
 	else
 		echo "Failed to delete the hash of ${remove_file}"
+		return 1
+	fi
+}
+
+function check_hash_entry () {
+	#return 0 if the hash of "$1" exists
+	local filename="$1"
+	if [[ -n "$(awk -F '\t' -v name="${filename}" '$2 == name {print}' "${FILENAME}")" ]]; then
+		return 0
+	else
 		return 1
 	fi
 }
