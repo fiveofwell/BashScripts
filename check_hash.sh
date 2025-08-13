@@ -20,10 +20,10 @@ add_hash () {
 	local timestamp="$(date '+%Y/%m/%d %H:%M:%S')"
 	if echo -e "${hash}\t${file}\t${timestamp}" >>"${FILENAME}"; then
 		echo "The hash of ${file} was successfully recorded."
-		exit 0
+		return 0
 	else
 		echo "Hash recording failed."
-		exit 1
+		return 1
 	fi
 }
 
@@ -35,12 +35,12 @@ interactive_add_hash () {
 	skip="false"
 	if [[ ! -f "${append_file}" ]]; then
 		echo "File ${append_file} does not exist."
-		exit 1
+		return 1
 	elif check_hash_entry "${append_file}" ; then
 		if [[ "${auto_yes}" = "true" ]]; then
 			echo "The hash of ${append_file} will be replaced."
 			if ! remove_hash "${append_file}"; then
-				exit 1
+				return 1
 			fi
 		elif [[ "${auto_no}" = "true" ]]; then
 			echo "The hash of ${append_file} was already recorded. Process skipped."
@@ -53,7 +53,7 @@ interactive_add_hash () {
 				read -r input
 				if [[ "${input,,}" = "yes" ]]; then
 					if ! remove_hash "${append_file}"; then
-						exit 1
+						return 1
 					fi
 					break
 				elif [[ "${input,,}" = "no" ]]; then
@@ -67,11 +67,17 @@ interactive_add_hash () {
 	fi
 
 	if [[ "${skip}" = "false" ]]; then
-		add_hash "${append_file}"
+		if add_hash "${append_file}"; then
+			return 0
+		else
+			return 1
+		fi
 	fi
+	return 0
 }
 
 remove_hash () {
+	
 	local remove_file="$(realpath $1)"
 	if [[ ! -f "${remove_file}" ]]; then
 		echo "File ${remove_file} does not exist."
@@ -96,8 +102,8 @@ remove_hash () {
 	fi
 }
 
+#return 0 if the hash of "$1" exists
 function check_hash_entry () {
-	#return 0 if the hash of "$1" exists
 	local filename="$1"
 	if [[ -n "$(awk -F '\t' -v name="${filename}" '$2 == name {print}' "${FILENAME}")" ]]; then
 		return 0
@@ -132,14 +138,14 @@ do
 			flag_p="true"
 			;;
 		y)
-			if [[ "${auto_no}" == "true" ]]; then
+			if [[ "${auto_no}" = "true" ]]; then
 				echo "The -y and -n options are mutually exclusive."
 				exit 1
 			fi
 			auto_yes="true"
 			;;
 		n)
-			if [[ "${auto_yes}" == "true" ]]; then
+			if [[ "${auto_yes}" = "true" ]]; then
 				echo "The -y and -n options are mutually exclusive."
 				exit 1
 			fi
@@ -171,8 +177,11 @@ if [[ "${flag_a}" = "false" && ("${auto_yes}" = "true" || "${auto_no}" = "true")
 fi
 
 if [[ "${flag_a}" = "true" ]]; then
-	interactive_add_hash "${append_file}" "${auto_yes}" "${auto_no}"
-	exit 0
+	if interactive_add_hash "${append_file}" "${auto_yes}" "${auto_no}"; then
+		exit 0
+	else
+		exit 1
+	fi
 fi
 
 while IFS=$'\t' read -r hash file timestamp 
