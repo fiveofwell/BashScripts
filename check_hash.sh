@@ -190,8 +190,19 @@ if [[ "${flag_a}" = "true" ]]; then
 	fi
 fi
 
+record_count="$(cat "${FILENAME}" | wc -l)"
+
+if [[ "${record_count}" -eq 0 ]]; then
+	echo "No files to check."
+	exit 0
+else
+	echo "${record_count} files will be checked."
+fi
+
+progress=1
 while IFS=$'\t' read -r hash file timestamp 
 do
+	echo -n "${progress}/${record_count}: "
 	if [[ ! -f "${file}" ]]; then
 		echo "${file} does not exist."
 	elif [[ "$(sha256sum "${file}" | cut -d ' ' -f1)" != "${hash}" ]]; then
@@ -199,6 +210,7 @@ do
 	else
 		echo "No changes found on ${file} since ${timestamp}"
 	fi
+	(( progress++ ))
 done < "${FILENAME}"
 
 exit 0
