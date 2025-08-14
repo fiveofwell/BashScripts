@@ -14,10 +14,10 @@ usage () {
 }
 
 add_hash () {
-	local append_file="$1"
+	local file="$(realpath "$1")"
 	local hash="$(sha256sum "${append_file}" | cut -d ' ' -f1)"
-	local file="$(realpath "${append_file}")"
 	local timestamp="$(date '+%Y/%m/%d %H:%M:%S')"
+
 	if echo -e "${hash}\t${file}\t${timestamp}" >>"${FILENAME}"; then
 		echo "The hash of ${file} was successfully recorded."
 		return 0
@@ -28,31 +28,32 @@ add_hash () {
 }
 
 interactive_add_hash () {
-	local append_file="$(realpath $1)"
+	local file="$(realpath "$1")"
 	local auto_yes="$2"
 	local auto_no="$3"
 
-	skip="false"
-	if [[ ! -f "${append_file}" ]]; then
-		echo "File ${append_file} does not exist."
+	local skip="false"
+
+	if [[ ! -f "${file}" ]]; then
+		echo "File ${file} does not exist."
 		return 1
-	elif check_hash_entry "${append_file}" ; then
+	elif check_hash_entry "${file}" ; then
 		if [[ "${auto_yes}" = "true" ]]; then
-			echo "The hash of ${append_file} will be replaced."
-			if ! remove_hash "${append_file}"; then
+			echo "The hash of ${file} will be replaced."
+			if ! remove_hash "${file}"; then
 				return 1
 			fi
 		elif [[ "${auto_no}" = "true" ]]; then
-			echo "The hash of ${append_file} was already recorded. Process skipped."
+			echo "The hash of ${file} was already recorded. Process skipped."
 			skip="true"
 		else	
-			echo "The hash of ${append_file} was already recorded."
+			echo "The hash of ${file} was already recorded."
 			while true 
 			do
 				echo -n "Would you like to replace the hash? (yes/no): "
 				read -r input
 				if [[ "${input,,}" = "yes" ]]; then
-					if ! remove_hash "${append_file}"; then
+					if ! remove_hash "${file}"; then
 						return 1
 					fi
 					break
@@ -67,7 +68,7 @@ interactive_add_hash () {
 	fi
 
 	if [[ "${skip}" = "false" ]]; then
-		if add_hash "${append_file}"; then
+		if add_hash "${file}"; then
 			return 0
 		else
 			return 1
@@ -77,8 +78,8 @@ interactive_add_hash () {
 }
 
 remove_hash () {
-	
 	local remove_file="$(realpath $1)"
+
 	if [[ ! -f "${remove_file}" ]]; then
 		echo "File ${remove_file} does not exist."
 		return 1
@@ -127,6 +128,7 @@ do
 			append_file="${OPTARG}"
 			flag_a="true"
 			;;
+
 		r)
 			if remove_hash "${OPTARG}"; then
 				exit 0
@@ -134,9 +136,11 @@ do
 				exit 1
 			fi
 			;;
+			
 		p)
 			flag_p="true"
 			;;
+			
 		y)
 			if [[ "${auto_no}" = "true" ]]; then
 				echo "The -y and -n options are mutually exclusive."
@@ -144,6 +148,7 @@ do
 			fi
 			auto_yes="true"
 			;;
+
 		n)
 			if [[ "${auto_yes}" = "true" ]]; then
 				echo "The -y and -n options are mutually exclusive."
@@ -151,6 +156,7 @@ do
 			fi
 			auto_no="true"
 			;;
+
 		*)
 			usage
 			exit 1
@@ -194,4 +200,5 @@ do
 		echo "No changes found on ${file} since ${timestamp}"
 	fi
 done < "${FILENAME}"
+
 exit 0
