@@ -13,6 +13,15 @@ usage () {
 	echo "-r file        remove the hash of file"
 }
 
+pluralize_file_count () {
+	if [[ "$1" -eq 1 ]]; then
+		echo -n "$1 file"
+	else
+		echo -n "$1 files"
+	fi
+	return 0
+}
+
 add_hash () {
 	local file="$(realpath "$1")"
 	local hash="$(sha256sum "${append_file}" | cut -d ' ' -f1)"
@@ -190,16 +199,20 @@ if [[ "${flag_a}" = "true" ]]; then
 	fi
 fi
 
-record_count="$(cat "${FILENAME}" | wc -l)"
+record_count="$(wc -l < "${FILENAME}")"
 
 if [[ "${record_count}" -eq 0 ]]; then
 	echo "No files to check."
 	exit 0
 else
-	echo "${record_count} files will be checked."
+	echo "$(pluralize_file_count "${record_count}") will be checked."
 fi
 
 progress=1
+
+unknown_file=0
+changed_file=0
+unchanged_file=0
 
 GREEN="\033[32m"
 RED="\033[31m"
@@ -209,13 +222,28 @@ while IFS=$'\t' read -r hash file timestamp
 do
 	echo -n "${progress}/${record_count}: "
 	if [[ ! -f "${file}" ]]; then
+		(( unknown_file++ ))
 		echo -e "${RED}${file} does not exist.${NC}"
 	elif [[ "$(sha256sum "${file}" | cut -d ' ' -f1)" != "${hash}" ]]; then
+		(( changed_file++ ))
 		echo -e "${RED}${file} may have been modified${NC} since ${timestamp}"
 	else
+		(( unchanged_file++ ))
 		echo -e "${GREEN}No changes found on ${file}${NC} since ${timestamp}"
 	fi
 	(( progress++ ))
 done < "${FILENAME}"
+
+if [[ "${unknown_file}" -ne 0 ]]; then
+	echo -e "${RED}$(pluralize_file_count "${unknown_file}") does not exist.${NC}"
+fi
+
+if [[ "${changed_file}" -ne 0 ]]; then
+	echo -e "${RED}$(pluralize_file_count "${changed_file}") modified.${NC}"
+fi
+
+if [[ "${unchanged_file}" -ne 0 ]]; then
+	echo -e "${GREEN}$(pluralize_file_count "${unchanged_file}") unchanged.${NC}"
+fi
 
 exit 0
