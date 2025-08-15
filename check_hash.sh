@@ -200,15 +200,20 @@ else
 fi
 
 progress=1
+
+GREEN="\033[32m"
+RED="\033[31m"
+NC="\033[0m"
+
 while IFS=$'\t' read -r hash file timestamp 
 do
 	echo -n "${progress}/${record_count}: "
 	if [[ ! -f "${file}" ]]; then
-		echo "${file} does not exist."
+		echo -e "${RED}${file} does not exist.${NC}"
 	elif [[ "$(sha256sum "${file}" | cut -d ' ' -f1)" != "${hash}" ]]; then
-		echo "${file} may have been modified since ${timestamp}."
+		echo -e "${RED}${file} may have been modified${NC} since ${timestamp}"
 	else
-		echo "No changes found on ${file} since ${timestamp}"
+		echo -e "${GREEN}No changes found on ${file}${NC} since ${timestamp}"
 	fi
 	(( progress++ ))
 done < "${FILENAME}"
