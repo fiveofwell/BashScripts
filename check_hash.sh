@@ -192,6 +192,11 @@ if [[ "${flag_a}" = "false" && ("${auto_yes}" = "true" || "${auto_no}" = "true")
 fi
 
 if [[ "${flag_a}" = "true" ]]; then
+	if [[ ! -r "${append_file}" ]]; then
+		echo "Cannot read ${append_file}."
+		exit 1
+	fi
+
 	if interactive_add_hash "${append_file}" "${auto_yes}" "${auto_no}"; then
 		exit 0
 	else
