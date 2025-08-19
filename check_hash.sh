@@ -4,6 +4,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FILE_DIR="${SCRIPT_DIR}/data"
 FILENAME="${SCRIPT_DIR}/data/file_hashes.txt"
 
+GREEN="\033[32m"
+RED="\033[31m"
+NC="\033[0m"
+
+flag_a="false"
+flag_p="false"
+auto_yes="false"
+auto_no="false"
+
 usage () {
 	echo "Usage: $0 [-p] [-a file [-y | -n]] [-r file]"
 	echo "-p             print the hash record file"
@@ -28,10 +37,10 @@ add_hash () {
 	local timestamp="$(date '+%Y/%m/%d %H:%M:%S')"
 
 	if echo -e "${hash}\t${file}\t${timestamp}" >>"${FILENAME}"; then
-		echo "The hash of ${file} was successfully recorded."
+		echo -e "${GREEN}The hash of ${file} was successfully recorded.${NC}"
 		return 0
 	else
-		echo "Hash recording failed."
+		echo -e "${RED}Hash recording failed.${NC}"
 		return 1
 	fi
 }
@@ -44,7 +53,7 @@ interactive_add_hash () {
 	local skip="false"
 
 	if [[ ! -f "${file}" ]]; then
-		echo "File ${file} does not exist."
+		echo "${RED}File ${file} does not exist.${NC}"
 		return 1
 	elif check_hash_entry "${file}" ; then
 		if [[ "${auto_yes}" = "true" ]]; then
@@ -90,10 +99,10 @@ remove_hash () {
 	local remove_file="$(realpath $1)"
 
 	if [[ ! -f "${remove_file}" ]]; then
-		echo "File ${remove_file} does not exist."
+		echo -e "${RED}File ${remove_file} does not exist.${NC}"
 		return 1
 	elif ! check_hash_entry "${remove_file}"; then
-		echo "The hash of ${remove_file} is not recorded."
+		echo -e "${RED}The hash of ${remove_file} is not recorded.${NC}"
 		return 1
 	fi
 
@@ -104,10 +113,10 @@ remove_hash () {
 	fi
 
 	if ! check_hash_entry "${remove_file}"; then
-		echo "The hash of ${remove_file} was successfully deleted."
+		echo -e "${GREEN}The hash of ${remove_file} was successfully deleted.${NC}"
 		return 0
 	else
-		echo "Failed to delete the hash of ${remove_file}"
+		echo -e "${RED}Failed to delete the hash of ${remove_file}${NC}"
 		return 1
 	fi
 }
@@ -125,10 +134,6 @@ function check_hash_entry () {
 mkdir -p "${FILE_DIR}"
 touch "${FILENAME}"
 
-flag_a="false"
-flag_p="false"
-auto_yes="false"
-auto_no="false"
 
 while getopts "a:r:pyn" OPT
 do
@@ -193,7 +198,7 @@ fi
 
 if [[ "${flag_a}" = "true" ]]; then
 	if [[ ! -r "${append_file}" ]]; then
-		echo "Cannot read ${append_file}."
+		echo -e "${RED}Cannot read ${append_file}${NC}"
 		exit 1
 	fi
 
@@ -218,10 +223,6 @@ progress=1
 unknown_file=0
 changed_file=0
 unchanged_file=0
-
-GREEN="\033[32m"
-RED="\033[31m"
-NC="\033[0m"
 
 while IFS=$'\t' read -r hash file timestamp 
 do
