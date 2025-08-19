@@ -1,12 +1,12 @@
 #!/bin/bash
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-FILE_DIR="${SCRIPT_DIR}/data"
-FILENAME="${SCRIPT_DIR}/data/file_hashes.txt"
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly FILE_DIR="${SCRIPT_DIR}/data"
+readonly FILENAME="${SCRIPT_DIR}/data/file_hashes.txt"
 
-GREEN="\033[32m"
-RED="\033[31m"
-NC="\033[0m"
+readonly GREEN="\033[32m"
+readonly RED="\033[31m"
+readonly NC="\033[0m"
 
 flag_a="false"
 flag_p="false"
@@ -33,7 +33,7 @@ pluralize_file_count () {
 
 add_hash () {
 	local file="$(realpath "$1")"
-	local hash="$(sha256sum "${append_file}" | cut -d ' ' -f1)"
+	local hash="$(sha256sum "${file}" | cut -d ' ' -f1)"
 	local timestamp="$(date '+%Y/%m/%d %H:%M:%S')"
 
 	if echo -e "${hash}\t${file}\t${timestamp}" >>"${FILENAME}"; then
@@ -53,7 +53,7 @@ interactive_add_hash () {
 	local skip="false"
 
 	if [[ ! -f "${file}" ]]; then
-		echo "${RED}File ${file} does not exist.${NC}"
+		echo -e "${RED}File ${file} does not exist.${NC}"
 		return 1
 	elif check_hash_entry "${file}" ; then
 		if [[ "${auto_yes}" = "true" ]]; then
@@ -96,7 +96,7 @@ interactive_add_hash () {
 }
 
 remove_hash () {
-	local remove_file="$(realpath $1)"
+	local remove_file="$(realpath "$1")"
 
 	if [[ ! -f "${remove_file}" ]]; then
 		echo -e "${RED}File ${remove_file} does not exist.${NC}"
