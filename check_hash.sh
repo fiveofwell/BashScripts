@@ -14,7 +14,8 @@ auto_yes="false"
 auto_no="false"
 
 usage () {
-	echo "Usage: $0 [-p] [-a file [-y | -n]] [-r file]"
+	echo "Usage: $0 [-h] [-p] [-a file [-y | -n]] [-r file]"
+	echo "-h             display help"
 	echo "-p             print the hash record file"
 	echo "-a file        append the hash of file"
 	echo "  -y           If the file already exists in the record, automatically replace its hash"
@@ -135,26 +136,23 @@ mkdir -p "${FILE_DIR}"
 touch "${FILENAME}"
 
 
-while getopts "a:r:pyn" OPT
+while getopts "hpa:ynr:" OPT
 do
 	case "${OPT}" in
+		h)
+			usage
+			exit 0
+			;;
+
+		p)
+			flag_p="true"
+			;;
+			
 		a)
 			append_file="${OPTARG}"
 			flag_a="true"
 			;;
 
-		r)
-			if remove_hash "${OPTARG}"; then
-				exit 0
-			else
-				exit 1
-			fi
-			;;
-			
-		p)
-			flag_p="true"
-			;;
-			
 		y)
 			if [[ "${auto_no}" = "true" ]]; then
 				echo "The -y and -n options are mutually exclusive."
@@ -171,6 +169,14 @@ do
 			auto_no="true"
 			;;
 
+		r)
+			if remove_hash "${OPTARG}"; then
+				exit 0
+			else
+				exit 1
+			fi
+			;;
+			
 		*)
 			usage
 			exit 1
