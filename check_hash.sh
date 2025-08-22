@@ -97,12 +97,9 @@ interactive_add_hash () {
 }
 
 remove_hash () {
-	local remove_file="$(realpath "$1")"
+	local remove_file="$(realpath -m "$1")"
 
-	if [[ ! -f "${remove_file}" ]]; then
-		echo -e "${RED}File ${remove_file} does not exist.${NC}"
-		return 1
-	elif ! check_hash_entry "${remove_file}"; then
+	if ! check_hash_entry "${remove_file}"; then
 		echo -e "${RED}The hash of ${remove_file} is not recorded.${NC}"
 		return 1
 	fi
