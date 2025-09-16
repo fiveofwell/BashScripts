@@ -184,7 +184,7 @@ done
 shift $((OPTIND -1))
 
 if [[ "$#" -ne 0 ]]; then
-	echo "Unexpected arguments: $@"
+	echo "Unexpected arguments: $*"
 	usage
 	exit 1
 fi
