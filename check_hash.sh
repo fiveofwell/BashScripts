@@ -10,17 +10,19 @@ readonly NC="\033[0m"
 
 flag_a="false"
 flag_p="false"
+flag_s="false"
 auto_yes="false"
 auto_no="false"
 
 usage () {
-	echo "Usage: $0 [-h] [-p] [-a file [-y | -n]] [-r file]"
+	echo "Usage: $0 [-h] [-p] [-a file [-y | -n]] [-r file] [-s]"
 	echo "-h             display help"
 	echo "-p             print the hash record file"
 	echo "-a file        append the hash of file"
-	echo "  -y           If the file already exists in the record, automatically replace its hash"
-	echo "  -n           If the file already exists in the record, automatically skip without updating"
+	echo "  -y           if the file already exists in the record, automatically replace its hash and timestamp"
+	echo "  -n           if the file already exists in the record, automatically skip without updating"
 	echo "-r file        remove the hash of file"
+	echo "-s             silent mode: only report modified or missing files"
 }
 
 pluralize_file_count () {
@@ -133,7 +135,7 @@ mkdir -p "${FILE_DIR}"
 touch "${FILENAME}"
 
 
-while getopts "hpa:ynr:" OPT
+while getopts "hpa:ynr:s" OPT
 do
 	case "${OPT}" in
 		h)
@@ -174,6 +176,10 @@ do
 			fi
 			;;
 			
+		s)
+			flag_s="true"
+			;;
+
 		*)
 			usage
 			exit 1
@@ -229,16 +235,20 @@ unchanged_file=0
 
 while IFS=$'\t' read -r hash file timestamp 
 do
-	echo -n "${progress}/${record_count}: "
 	if [[ ! -f "${file}" ]]; then
 		(( unknown_file++ ))
+		echo -n "${progress}/${record_count}: "
 		echo -e "${RED}${file} does not exist.${NC}"
 	elif [[ "$(sha256sum "${file}" | cut -d ' ' -f1)" != "${hash}" ]]; then
 		(( changed_file++ ))
+		echo -n "${progress}/${record_count}: "
 		echo -e "${RED}${file} may have been modified${NC} since ${timestamp}"
 	else
 		(( unchanged_file++ ))
-		echo -e "${GREEN}No changes found on ${file}${NC} since ${timestamp}"
+		if [[ "${flag_s}" == "false" ]]; then
+			echo -n "${progress}/${record_count}: "
+			echo -e "${GREEN}No changes found on ${file}${NC} since ${timestamp}"
+		fi
 	fi
 	(( progress++ ))
 done < "${FILENAME}"
