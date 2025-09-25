@@ -57,10 +57,28 @@ problem_cnt=0
 
 for cmd in $(shuf -e "${problems[@]}")
 do
-	description="$(man "${cmd}" | col -b | sed -n '/^NAME/,/^SYNOPSIS/p' | grep '-' | cut -d '-' -f 2 | sed 's/^ //g' )"
+	if ! manpage="$(man 1 "${cmd}" 2>/dev/null)"; then
+		continue
+	fi
+
+	description="$(\
+		echo "${manpage}" |\
+		col -b |\
+		grep -m 1 -A 1 "NAME" |\
+		tail -n 1 |\
+		sed 'y/-—–−/----/' |\
+		tr -s '-' |\
+		cut -d '-' -f 2- |\
+		sed 's/^ //'\
+		)"
+
+	if [[ -z "${description}" ]]; then
+		continue
+	fi
+
 	echo ""
 	echo "\"${description}\""
-	read input
+	read -p "Enter your answer: " input
 	if [[ "${input}" = "${cmd}" ]];then
 		echo "Correct!"
 		(( correct_cnt++ ))
