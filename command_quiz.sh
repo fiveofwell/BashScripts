@@ -47,7 +47,6 @@ problems=(
 )
 
 input=""
-i=0
 
 echo "Command quiz!"
 echo "Type \"end\" to finish"
@@ -87,7 +86,6 @@ do
 	else
 		break
 	fi
-	(( i++ ))
 	(( problem_cnt++ ))
 done
 
